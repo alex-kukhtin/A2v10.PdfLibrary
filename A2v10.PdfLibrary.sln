@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A2v10.Pdf", "A2v10.Pdf\A2v10.Pdf.csproj", "{DF09179B-B9CB-4896-93C1-7EC0470A5C23}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A2v10.Pdf.Tests", "A2v10.Pdf.Tests\A2v10.Pdf.Tests.csproj", "{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF09179B-B9CB-4896-93C1-7EC0470A5C23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF09179B-B9CB-4896-93C1-7EC0470A5C23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF09179B-B9CB-4896-93C1-7EC0470A5C23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF09179B-B9CB-4896-93C1-7EC0470A5C23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
