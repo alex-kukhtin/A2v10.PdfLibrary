@@ -11,6 +11,11 @@ namespace A2v10.Pdf
 
 	class LexerException : Exception
 	{
+		public LexerException(String message)
+			: base(message)
+		{
+		}
+
 		public LexerException(LexerError error)
 		{
 		}

@@ -1,0 +1,13 @@
+﻿
+1. Строки в круглых скобках. 
+
+Нет поддержки esc sequences
+\ddd (octal)
+
+Нет поддержки string line slit (слеш в конце строки)
+
+
+2. Hexadecimal string -> skip space \n \r \t \f
+
+3. Number (use minus)
+

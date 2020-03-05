@@ -25,5 +25,18 @@ namespace A2v10.Pdf.Tests
 			var lexer = TokenTypes("%PDF-1.5", Token.Header);
 			Assert.AreEqual("1.5", lexer.Version);
 		}
+
+		[TestMethod]
+		public void BalancedString()
+		{
+			var lexer = TokenTypes("(123456)", Token.String);
+			Assert.AreEqual("123456", lexer.StringValue);
+
+			lexer = TokenTypes("(123(t)456)", Token.String);
+			Assert.AreEqual("123(t)456", lexer.StringValue);
+
+			lexer = TokenTypes("(123(t))456)", Token.String);
+			Assert.AreEqual("123(t)", lexer.StringValue);
+		}
 	}
 }

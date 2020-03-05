@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A2v10.Pdf", "A2v10.Pdf\A2v1
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A2v10.Pdf.Tests", "A2v10.Pdf.Tests\A2v10.Pdf.Tests.csproj", "{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestReader", "TestReader\TestReader.csproj", "{15F59DE8-3554-4DE9-B635-E4F9E8AE7E75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D93DB2EE-0301-46C8-8D93-E9F9AE99F5CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15F59DE8-3554-4DE9-B635-E4F9E8AE7E75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15F59DE8-3554-4DE9-B635-E4F9E8AE7E75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15F59DE8-3554-4DE9-B635-E4F9E8AE7E75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15F59DE8-3554-4DE9-B635-E4F9E8AE7E75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
