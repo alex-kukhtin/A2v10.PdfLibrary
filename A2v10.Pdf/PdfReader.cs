@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Util.Zlib;
 using System.Xml;
 
 namespace A2v10.Pdf
@@ -131,17 +132,28 @@ namespace A2v10.Pdf
 
 		Stream ReadStream(PdfDictionary dict)
 		{
-			int len = dict.GetInt32("Length");
-			var buff = new Byte[len];
-			Int32 ch = _reader.PeekChar();
-			while (ch == '\r' || ch == '\n')
+			Int32 len = dict.GetInt32("Length");
+			var buffer = new Byte[len];
+			while (_reader.PeekChar() == '\r' || _reader.PeekChar() == '\n')
 			{
-				ch = _reader.ReadByte();
+				_reader.ReadByte();
 			}
 
-			_reader.Read(buff, 0, len);
+			_reader.Read(buffer, 0, len);
 
-			dict.Add("_stream", new PdfStream(buff));
+			if (len == 91)
+			{
+				Byte[] result = ZInflaterStream.FlatDecode(buffer);
+				int z = 55;
+				buffer = result;
+			}
+
+			if (len == 1586)
+			{
+				int z = 55;
+			}
+
+			dict.Add("_stream", new PdfStream(buffer));
 
 			_lexer.NextToken();
 			if (_lexer.Token != Token.Ider && _lexer.Ider != Ider.endstream)
