@@ -45,6 +45,16 @@ namespace A2v10.Pdf
 					stream.DecodePredictor(prms);
 			}
 		}
+
+		public Boolean ContainsKey(String key)
+		{
+			return _dict.ContainsKey(key);
+		}
+
+		public T Get<T>(String key) where T:class
+		{
+			return _dict.Get<T>(key);
+		}
 	}
 
 	public class PdfCatalog : PdfElement
@@ -73,5 +83,9 @@ namespace A2v10.Pdf
 		{
 		}
 		public Int32 XRef => _dict.Get<PdfInteger>("_xref").Value;
+
+		public Boolean IsTrailer => XRef == 0 && _dict.ContainsKey("Prev");
+
+		public PdfName EncryptRef => _dict.Get<PdfName>("Encrypt");
 	}
 }

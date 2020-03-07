@@ -106,6 +106,10 @@ namespace A2v10.Pdf
 						_token = Token.StartDictionary;
 						break;
 					}
+					else
+					{
+						Unget(next);
+					}
 					_token = Token.HexString;
 					ReadHexString();
 					break;

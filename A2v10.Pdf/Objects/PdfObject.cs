@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Util.Zlib;
 
 namespace A2v10.Pdf
@@ -85,6 +86,19 @@ namespace A2v10.Pdf
 		{
 			_value = value;
 		}
+
+		public Byte[] Value
+		{
+			get {
+				var bytes = new Byte[_value.Length / 2];
+				var arr = _value.ToCharArray();
+				for (Int32 i=0; i<_value.Length; i+= 2)
+				{
+					bytes[i / 2] = Byte.Parse(_value.Substring(i, 2), NumberStyles.HexNumber);
+				}
+				return bytes;
+			}
+		}
 	}
 
 	public class PdfName : PdfObject
@@ -157,6 +171,13 @@ namespace A2v10.Pdf
 		public void Add(PdfObject value)
 		{
 			_list.Add(value);
+		}
+
+		public Int32 Count => _list.Count;
+
+		public T Get<T>(Int32 index) where T:class
+		{
+			return _list[index] as T;
 		}
 	}
 
