@@ -1,14 +1,8 @@
-﻿// Copyright © 2018 Alex Kukhtin. All rights reserved.
+﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Util.Zlib;
-using System.Xml;
 
 namespace A2v10.Pdf
 {
@@ -16,8 +10,6 @@ namespace A2v10.Pdf
 	{
 		private readonly BinaryReader _reader;
 		private readonly Lexer _lexer;
-
-		public ReadState ReadState { get; } // TODO: xml
 
 		private PdfReader(BinaryReader reader)
 		{
@@ -38,7 +30,7 @@ namespace A2v10.Pdf
 
 		protected virtual void Dispose(Boolean disposing)
 		{
-			if (disposing && ReadState != ReadState.Closed)
+			if (disposing)
 			{
 				Close();
 			}
@@ -49,6 +41,7 @@ namespace A2v10.Pdf
 		{
 			var file = new PdfFile();
 			Read(file);
+			file.Construct();
 			return file;
 		}
 
@@ -74,7 +67,8 @@ namespace A2v10.Pdf
 									switch (_lexer.Ider)
 									{
 										case Ider.obj:
-											ReadObject(objId);
+											var obj = ReadObject(objId);
+											file.AddObject(objId, obj);
 											break;
 										default:
 											throw new LexerException($"unknown object {_lexer.Ider}");
@@ -93,7 +87,7 @@ namespace A2v10.Pdf
 			_reader?.Dispose();
 		}
 
-		public void ReadObject(String objId)
+		public PdfDictionary ReadObject(String objId)
 		{
 			PdfDictionary dict = null;
 			while (_lexer.NextToken())
@@ -108,11 +102,22 @@ namespace A2v10.Pdf
 							switch (_lexer.Ider)
 							{
 								case Ider.endobj:
-									if (objId == "25 0")
-									{
-										int z = 55;
+									if (dict.Get<PdfName>("Type")?.Name == "XRef") {
+										_lexer.NextToken();
+										if (_lexer.Token == Token.Ider && _lexer.Ider == Ider.startxref)
+										{
+											_lexer.NextToken(); // xref
+											dict.Add("_xref", new PdfInteger(_lexer.StringValue));
+											_lexer.NextToken(); // eof
+											if (_lexer.Token != Token.Eof)
+												throw new LexerException($"Invalid XRef");
+										}
+										else
+										{
+											throw new LexerException($"Invalid XRef");
+										}
 									}
-									return;
+									return dict;
 								case Ider.stream:
 									if (dict == null) {
 										throw new LexerException($"There is no dictionary for stream");
@@ -128,30 +133,27 @@ namespace A2v10.Pdf
 						throw new LexerException($"Unknown token for object {_lexer.Token}");
 				}
 			}
+			return dict;
 		}
 
 		Stream ReadStream(PdfDictionary dict)
 		{
 			Int32 len = dict.GetInt32("Length");
 			var buffer = new Byte[len];
-			while (_reader.PeekChar() == '\r' || _reader.PeekChar() == '\n')
+			Int32 offset = 0;
+			while (true)
 			{
-				_reader.ReadByte();
+				Byte ch = _reader.ReadByte();
+				if (ch != '\n' && ch != '\r')
+				{
+					buffer[offset] = ch;
+					offset += 1;
+					break;
+				}
+
 			}
 
-			_reader.Read(buffer, 0, len);
-
-			if (len == 91)
-			{
-				Byte[] result = ZInflaterStream.FlatDecode(buffer);
-				int z = 55;
-				buffer = result;
-			}
-
-			if (len == 1586)
-			{
-				int z = 55;
-			}
+			_reader.Read(buffer, offset, len - offset);
 
 			dict.Add("_stream", new PdfStream(buffer));
 

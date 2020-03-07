@@ -45,6 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Crypto\EncryptArc4.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Objects\PdfElement.cs" />
+    <Compile Include="Parser\PredictorDecoder.cs" />
     <Compile Include="Parser\Lexer.cs" />
     <Compile Include="Parser\ParserException.cs" />
     <Compile Include="Document.cs" />

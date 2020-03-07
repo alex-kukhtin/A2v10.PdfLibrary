@@ -141,38 +141,36 @@ namespace A2v10.Pdf
 		public PdfDictionary ReadDictionary()
 		{
 			var dict = new PdfDictionary();
-			String name;
+			String name = null;
+			Boolean bVal = false;
 			while (NextToken())
 			{
-				switch (Token)
+				if (bVal)
 				{
-					case Token.Name:
-						name = StringValue;
-						if (name == "Contents")
-						{
-							int z = 55;
-						}
-						NextToken();
-						if (Token == Token.Name)
-						{
-							dict.Add(name, new PdfNull());
+					if (String.IsNullOrEmpty(name))
+						throw new LexerException($"Invalid dictionary structure");
+					dict.Add(name, ReadDictionaryValue(name));
+					bVal = false;
+				}
+				else
+				{
+					switch (Token)
+					{
+						case Token.Name:
 							name = StringValue;
-						}
-						else
-						{
-							dict.Add(name, ReadDictionaryValue());
-						}
-						break;
-					case Token.EndDictionary:
-						return dict;
-					default:
-						throw new LexerException($"Invalid dictionary type: {Token}");
+							bVal = true;
+							break;
+						case Token.EndDictionary:
+							return dict;
+						default:
+							throw new LexerException($"Invalid dictionary type '{Token}' for '{name}' element.");
+					}
 				}
 			}
 			return dict;
 		}
 
-		PdfObject ReadArray()
+		PdfObject ReadArray(String name)
 		{
 			var arr = new PdfArray();
 			while (NextToken())
@@ -181,42 +179,57 @@ namespace A2v10.Pdf
 				{
 					case Token.EndArray:
 						return arr;
-					case Token.Number:
-						arr.Add(PlainPdfObject());
+					default: 
+						if (IsReference(name))
+						{
+							String xRef = StringValue;
+							NextToken();
+							xRef += $" {StringValue}"; // with space
+							NextToken();
+							if (Token != Token.String && StringValue != "R")
+								throw new LexerException($"Invalid reference {name}");
+							arr.Add(new PdfName(xRef));
+						}
+						else
+						{
+							arr.Add(PlainPdfObject());
+						}
 						break;
-					case Token.String:
-						arr.Add(new PdfString(StringValue));
-						break;
-					case Token.HexString:
-						arr.Add(new PdfHexString(StringValue));
-						break;
-					case Token.Ider:
-						arr.Add(new PdfString(StringValue));
-						break;
-					default:
-						throw new LexerException($"Invalid array item type: {Token}");
 				}
 			}
 			throw new LexerException($"Invalid array type: {Token}");
 		}
 
-		PdfObject ReadDictionaryValue()
+		const String _refNames = "Encrypt|Root|Info|Metadata|PageLabels|Pages|Parent|Resources|Contents|";
+
+		Boolean IsReference(String name)
+		{
+			return _refNames.Contains($"{name}|");
+		}
+
+		PdfObject ReadDictionaryValue(String name)
 		{
 			switch (Token)
 			{
 				case Token.StartArray:
-					return ReadArray();
+					return ReadArray(name);
 				case Token.StartDictionary:
 					return ReadDictionary();
 				default:
-					var sv = ReadUntilDelimiter();
-					if (!String.IsNullOrEmpty(sv))
+					if (IsReference(name))
 					{
-						_stringValue += sv;
-						return new PdfString(StringValue);
+						String xRef = StringValue;
+						NextToken();
+						xRef += $" {StringValue}"; // with space
+						NextToken();
+						if (Token != Token.String && StringValue != "R")
+							throw new LexerException($"Invalid reference {name}");
+						return new PdfName(xRef);
 					}
 					else
+					{
 						return PlainPdfObject();
+					}
 			}
 		}
 
@@ -231,8 +244,10 @@ namespace A2v10.Pdf
 					return new PdfString(StringValue);
 				case Token.HexString:
 					return new PdfHexString(StringValue);
+				case Token.Name:
+					return new PdfName(StringValue);
 			}
-			throw new LexerException($"Invalid token for plain object {Token}");
+			throw new LexerException($"Invalid token for plain object '{Token}'");
 		}
 
 		void CheckHeader()
@@ -276,19 +291,6 @@ namespace A2v10.Pdf
 		void ReadIder(Int32 ch)
 		{
 			ReadName(ch);
-		}
-
-		String ReadUntilDelimiter()
-		{
-			var ch = Read();
-			StringBuilder sb = new StringBuilder();
-			while (!IsEol(ch) && !IsDelimiter(ch))
-			{
-				sb.Append((Char)ch);
-				ch = Read();
-			}
-			Unget(ch);
-			return sb.ToString();
 		}
 
 		String ReadToEol(Int32 ch)

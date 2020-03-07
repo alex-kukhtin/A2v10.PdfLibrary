@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Util.Zlib;
 
 namespace A2v10.Pdf
 {
@@ -86,6 +87,19 @@ namespace A2v10.Pdf
 		}
 	}
 
+	public class PdfName : PdfObject
+	{
+		private readonly String _value;
+
+		public PdfName(String value)
+			: base(ObjectType.HexString)
+		{
+			_value = value;
+		}
+
+		public String Name => _value;
+	}
+
 	public class PdfDictionary: PdfObject
 	{
 		private readonly IDictionary<String, PdfObject> _dictionary;
@@ -114,6 +128,16 @@ namespace A2v10.Pdf
 			throw new LexerException($"Invalid number value. name = {name}");
 		}
 
+		public T Get<T>(String name) where T: class
+		{
+			if (_dictionary.TryGetValue(name, out PdfObject val))
+			{
+				if (val is T)
+					return val as T;
+			}
+			return null;
+		}
+
 		public Boolean ContainsKey(String key)
 		{
 			return _dictionary.ContainsKey(key);
@@ -138,11 +162,22 @@ namespace A2v10.Pdf
 
 	public class PdfStream : PdfObject
 	{
-		public Byte[] Bytes { get; }
+		public Byte[] Bytes { get; private set; }
 		public PdfStream(Byte[] bytes)
 		: base(ObjectType.Stream)
 		{
 			Bytes = bytes;
+		}
+
+		public void FlateDecode()
+		{
+			Byte[] result = ZInflaterStream.FlatDecode(Bytes);
+			Bytes = result;
+		}
+
+		public void DecodePredictor(PdfDictionary dict)
+		{
+			Bytes = PredictorDecoder.Decode(Bytes, dict);
 		}
 	}
 }
