@@ -13,7 +13,7 @@ namespace TestReader
 {
 	class Program
 	{
-		static void Main(string[] args)
+		static void Main(String[] args)
 		{
 			using (var br = new BinaryReader(File.Open("D:\\_PDF_LIBRARY\\F0103306.pdf", FileMode.Open)))
 			{

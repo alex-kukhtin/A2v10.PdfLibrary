@@ -10,9 +10,11 @@ namespace A2v10.Pdf
 {
 	public class Document
 	{
+		/*
 		String Header;
 		String Trailer;
 		String Body;
 		String CrossReferenceTable;
+		*/
 	}
 }

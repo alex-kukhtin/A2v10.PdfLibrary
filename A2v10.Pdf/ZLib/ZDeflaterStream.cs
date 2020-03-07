@@ -8,8 +8,8 @@ namespace System.Util.Zlib
 	{
 
 		private const Int32 BUFSIZE = 4192;
-		private Byte[] _buffer = new Byte[BUFSIZE];
-		private Int32 _flushLevel = JZlib.Z_NO_FLUSH;
+		private readonly Byte[] _buffer = new Byte[BUFSIZE];
+		private readonly Int32 _flushLevel = JZlib.Z_NO_FLUSH;
 
 		private readonly ZStream _zstream = new ZStream();
 		private readonly Stream _output;

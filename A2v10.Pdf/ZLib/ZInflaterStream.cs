@@ -13,7 +13,7 @@ namespace System.Util.Zlib
 		private readonly Byte[] _buffer = new Byte[BUFSIZE];
 
 		private Boolean _nomoreinput = false;
-		private Int32 _flushLevel = JZlib.Z_NO_FLUSH;
+		private readonly Int32 _flushLevel = JZlib.Z_NO_FLUSH;
 
 		public ZInflaterStream(Stream input, Boolean nowrap = false)
 		{

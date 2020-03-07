@@ -1,20 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using System;
 
 namespace A2v10.Pdf.Crypto
 {
 	class EncryptArc4
 	{
-		private Byte[] state = new Byte[256];
+		private readonly Byte[] state = new Byte[256];
 		private Int32 x;
 		private Int32 y;
 
-		virtual public void PrepareARC4Key(Byte[] key, Int32 offset = 0)
+		virtual public void PrepareARC4Key(Byte[] key, Int32 offset = 0, Int32 length = 0)
 		{
-			Int32 len = key.Length;
+			Int32 len = length == 0 ? key.Length : length;
 			Int32 index1 = 0;
 			Int32 index2 = 0;
 			for (Int32 k = 0; k < 256; ++k)
@@ -45,6 +42,21 @@ namespace A2v10.Pdf.Crypto
 				state[y] = tmp;
 				dataOut[k - off + offOut] = (Byte)(dataIn[k] ^ state[(state[x] + state[y]) & 255]);
 			}
+		}
+
+		virtual public void EncryptARC4(Byte[] data, Int32 off, Int32 len)
+		{
+			EncryptARC4(data, off, len, data, off);
+		}
+
+		virtual public void EncryptARC4(Byte[] dataIn, Byte[] dataOut)
+		{
+			EncryptARC4(dataIn, 0, dataIn.Length, dataOut, 0);
+		}
+
+		virtual public void EncryptARC4(Byte[] data)
+		{
+			EncryptARC4(data, 0, data.Length, data, 0);
 		}
 	}
 }

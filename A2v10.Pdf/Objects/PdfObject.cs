@@ -1,5 +1,6 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
+using A2v10.Pdf.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -74,6 +75,18 @@ namespace A2v10.Pdf
 			: base(ObjectType.String)
 		{
 			Value = value;
+		}
+
+		public Byte[] ToISOBytes()
+		{
+			if (Value == null)
+				return null;
+			Int32 len = Value.Length;
+			Byte[] b = new Byte[len];
+			for (Int32 i = 0; i < len; i++)
+				b[i] = (Byte) Value[i];
+			return b;
+
 		}
 	}
 
@@ -193,6 +206,12 @@ namespace A2v10.Pdf
 		public void FlateDecode()
 		{
 			Byte[] result = ZInflaterStream.FlatDecode(Bytes);
+			Bytes = result;
+		}
+
+		public void Decrypt(PdfEncryption decryptor)
+		{
+			var result = decryptor.DecryptByteArray(Bytes);
 			Bytes = result;
 		}
 

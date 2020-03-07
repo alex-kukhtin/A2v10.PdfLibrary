@@ -1,6 +1,7 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 
+using A2v10.Pdf.Crypto;
 using System;
 
 namespace A2v10.Pdf
@@ -44,6 +45,21 @@ namespace A2v10.Pdf
 				if (prms != null)
 					stream.DecodePredictor(prms);
 			}
+		}
+
+
+		public virtual void Decrypt(PdfEncryption decryptor, Int32 key, Int32 revision)
+		{
+			PdfStream stream = _dict.Get<PdfStream>("_stream");
+			if (stream == null)
+				throw new PdfException("There is no stream for Decrypt");
+			decryptor.SetHashKey(key, revision);
+			stream.Decrypt(decryptor);
+			Decode();
+
+
+			var debugString = System.Text.Encoding.ASCII.GetString(stream.Bytes);
+			Console.WriteLine(debugString);
 		}
 
 		public Boolean ContainsKey(String key)
