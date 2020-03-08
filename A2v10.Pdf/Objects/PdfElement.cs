@@ -15,6 +15,8 @@ namespace A2v10.Pdf
 			_dict = dict;
 		}
 
+		public virtual Boolean IsEncrypted => true;
+
 		public static PdfElement Create(PdfName name, PdfDictionary dict)
 		{
 			if (name == null)
@@ -47,6 +49,13 @@ namespace A2v10.Pdf
 			}
 		}
 
+		public Boolean IsStream => _dict.Get<PdfStream>("_stream") != null;
+
+		public virtual void Decrypt(PdfEncryption decryptor, String key)
+		{
+			var sp = key.Split(' ');
+			Decrypt(decryptor, Int32.Parse(sp[0]), Int32.Parse(sp[1]));
+		}
 
 		public virtual void Decrypt(PdfEncryption decryptor, Int32 key, Int32 revision)
 		{
@@ -80,9 +89,12 @@ namespace A2v10.Pdf
 		{
 		}
 
+		public override Boolean IsEncrypted => false;
+
 		public PdfName PagesName => _dict.Get<PdfName>("Pages");
 		public PdfName MetadataName  => _dict.Get<PdfName>("Metadata");
 		public PdfName PageLabelsName => _dict.Get<PdfName>("PageLabels");
+
 	}
 
 	public class PdfPage : PdfElement
@@ -103,5 +115,7 @@ namespace A2v10.Pdf
 		public Boolean IsTrailer => XRef == 0 && _dict.ContainsKey("Prev");
 
 		public PdfName EncryptRef => _dict.Get<PdfName>("Encrypt");
+
+		public override Boolean IsEncrypted => false;
 	}
 }

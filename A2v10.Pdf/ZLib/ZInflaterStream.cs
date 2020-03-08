@@ -30,9 +30,11 @@ namespace System.Util.Zlib
 			MemoryStream output = new MemoryStream();
 			ZInflaterStream zip = new ZInflaterStream(stream);
 			byte[] b = new Byte[strict ? 4092 : 1];
-			try {
+			try
+			{
 				int n;
-				while ((n = zip.Read(b, 0, b.Length)) > 0) {
+				while ((n = zip.Read(b, 0, b.Length)) > 0)
+				{
 					output.Write(b, 0, n);
 				}
 				zip.Close();
@@ -47,7 +49,7 @@ namespace System.Util.Zlib
 		}
 
 
-public override Boolean CanRead => true;
+		public override Boolean CanRead => true;
 
 		public override Boolean CanSeek => false;
 

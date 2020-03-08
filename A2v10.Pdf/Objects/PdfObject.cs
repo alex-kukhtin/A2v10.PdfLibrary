@@ -1,10 +1,11 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
-using A2v10.Pdf.Crypto;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Util.Zlib;
+
+using A2v10.Pdf.Crypto;
 
 namespace A2v10.Pdf
 {
@@ -152,7 +153,7 @@ namespace A2v10.Pdf
 						return valNum.Value;
 				}
 			}
-			throw new LexerException($"Invalid number value. name = {name}");
+			throw new LexerException($"Invalid Number value. Name: {name}");
 		}
 
 		public T Get<T>(String name) where T: class

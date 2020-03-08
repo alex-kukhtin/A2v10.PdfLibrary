@@ -67,7 +67,6 @@ namespace A2v10.Pdf
 
 		void CreateEncrypt(PdfElement elem)
 		{
-			Byte[] password = null;
 			var cf = elem.Get<PdfElement>("CF");
 			if (cf != null)
 			{
@@ -111,10 +110,10 @@ namespace A2v10.Pdf
 			{
 				if (rValue != 5)
 				{
-					_decryptor.SetupByOwnerPassword(_documentId, password, uValue, oValue, pValue);
+					_decryptor.SetupByOwnerPassword(_documentId, uValue, oValue, pValue);
 					Int32 checkLen = (rValue == 3 || rValue == 4) ? 16 : 32;
 					if (!EqualsArray(uValue, _decryptor.UserKey, checkLen)) {
-						_decryptor.SetupByUserPassword(_documentId, password, oValue, pValue);
+						_decryptor.SetupByUserPassword(_documentId, oValue, pValue);
 					}
 
 				}
@@ -131,7 +130,6 @@ namespace A2v10.Pdf
 			return true;
 		}
 
-
 		public void Construct()
 		{			
 			foreach (var val in _xRefs)
@@ -142,8 +140,17 @@ namespace A2v10.Pdf
 			}
 			DecodeTrailer();
 
-			var stm = _objects["31 0"];
-			stm.Decrypt(_decryptor, 31, 0);
+			foreach (var o in _objects)
+			{
+				if (o.Value.IsEncrypted && o.Value.IsStream)
+				{
+					o.Value.Decrypt(_decryptor, o.Key);
+				}
+			}
+			/*
+			var stm = _objects["29 0"];
+			stm.Decrypt(_decryptor, 29, 0);
+			*/
 		}
 	}
 }

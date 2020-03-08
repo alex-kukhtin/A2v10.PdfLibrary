@@ -44,12 +44,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Crypto\DigestAlgorithms.cs" />
-    <Compile Include="Crypto\DigestBase.cs" />
-    <Compile Include="Crypto\EncryptArc4.cs" />
-    <Compile Include="Crypto\IDigest.cs" />
-    <Compile Include="Crypto\MD5Digest.cs" />
-    <Compile Include="Crypto\Pack.cs" />
+    <Compile Include="Crypto\RC4.cs" />
+    <Compile Include="Crypto\MD5.cs" />
+    <Compile Include="Crypto\MD5DigestMS.cs" />
     <Compile Include="Crypto\PdfEncryption.cs" />
     <Compile Include="Crypto\StandardDecryption.cs" />
     <Compile Include="Exceptions.cs" />

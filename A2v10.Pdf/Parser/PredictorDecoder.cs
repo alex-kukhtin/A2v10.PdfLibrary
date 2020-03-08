@@ -1,11 +1,4 @@
-﻿
-
-/*
- *	PARTIAL CODE FROM:
-    This file is part of the iText (R) project.
-    Copyright (c) 1998-2019 iText Group NV
-    Authors: iText Software.
-*/
+﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 using System;
 using System.IO;
@@ -29,7 +22,7 @@ namespace A2v10.Pdf
 			if (colsObj != null )
 				width = colsObj.Value;
 			Int32 colors = 1;  // TODO from DICT
-			int bpc = 8;   // TODO from DICT
+			Int32 bpc = 8;   // TODO from DICT
 			MemoryStream dataStream = new MemoryStream(inp);
 			MemoryStream fout = new MemoryStream(inp.Length);
 			Int32 bytesPerPixel = colors * bpc / 8;
@@ -41,10 +34,10 @@ namespace A2v10.Pdf
 			{
 				if (bpc == 8)
 				{
-					int numRows = inp.Length / bytesPerRow;
+					Int32 numRows = inp.Length / bytesPerRow;
 					for (Int32 row = 0; row < numRows; row++)
 					{
-						int rowStart = row * bytesPerRow;
+						Int32 rowStart = row * bytesPerRow;
 						for (Int32 col = 0 + bytesPerPixel; col < bytesPerRow; col++)
 						{
 							inp[rowStart + col] = (Byte)(inp[rowStart + col] + inp[rowStart + col - bytesPerPixel]);
@@ -66,10 +59,10 @@ namespace A2v10.Pdf
 					{
 						return fout.ToArray();
 					}
-					int tot = 0;
+					Int32 tot = 0;
 					while (tot < bytesPerRow)
 					{
-						int n = dataStream.Read(curr, tot, bytesPerRow - tot);
+						Int32 n = dataStream.Read(curr, tot, bytesPerRow - tot);
 						if (n <= 0)
 							return fout.ToArray();
 						tot += n;
@@ -94,9 +87,9 @@ namespace A2v10.Pdf
 						break;
 					case 3: //PNG_FILTER_AVERAGE
 						for (Int32 i = 0; i < bytesPerPixel; i++)
-							curr[i] += (byte)(prior[i] / 2);
+							curr[i] += (Byte)(prior[i] / 2);
 						for (Int32 i = bytesPerPixel; i < bytesPerRow; i++)
-							curr[i] += (byte)(((curr[i - bytesPerPixel] & 0xff) + (prior[i] & 0xff)) / 2);
+							curr[i] += (Byte)(((curr[i - bytesPerPixel] & 0xff) + (prior[i] & 0xff)) / 2);
 						break;
 					case 4: //PNG_FILTER_PAETH
 						for (Int32 i = 0; i < bytesPerPixel; i++)
@@ -121,7 +114,7 @@ namespace A2v10.Pdf
 								ret = b;
 							else
 								ret = c;
-							curr[i] += (byte)(ret);
+							curr[i] += (Byte)(ret);
 						}
 						break;
 					default:
