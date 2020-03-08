@@ -46,9 +46,7 @@
   <ItemGroup>
     <Compile Include="Crypto\RC4.cs" />
     <Compile Include="Crypto\MD5.cs" />
-    <Compile Include="Crypto\MD5DigestMS.cs" />
     <Compile Include="Crypto\PdfEncryption.cs" />
-    <Compile Include="Crypto\StandardDecryption.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="Objects\Constants.cs" />
     <Compile Include="Objects\PdfElement.cs" />

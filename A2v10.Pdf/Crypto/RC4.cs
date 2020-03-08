@@ -6,8 +6,8 @@ namespace A2v10.Pdf.Crypto
 	public sealed class RC4
 	{
 		private readonly Byte[] _state = new Byte[256];
-		private Int32 x  = 0;
-		private Int32 y = 0;
+		private Int32 _x;
+		private Int32 _y;
 
 		public static void Encrypt(Byte[] key, Byte[] data, Int32 offset = 0, Int32 keyLength = 0, Int32 dataLength = 0)
 		{
@@ -25,8 +25,8 @@ namespace A2v10.Pdf.Crypto
 			Int32 index2 = 0;
 			for (Int32 k = 0; k < 256; ++k)
 				_state[k] = (Byte) k;
-			x = 0;
-			y = 0;
+			_x = 0;
+			_y = 0;
 			Byte tmp;
 			for (Int32 k = 0; k < 256; ++k)
 			{
@@ -44,12 +44,12 @@ namespace A2v10.Pdf.Crypto
 			Byte tmp;
 			for (Int32 k = off; k < length; ++k)
 			{
-				x = (x + 1) & 0xff;
-				y = (_state[x] + y) & 0xff;
-				tmp = _state[x];
-				_state[x] = _state[y];
-				_state[y] = tmp;
-				dataOut[k - off + offOut] = (Byte)(dataIn[k] ^ _state[(_state[x] + _state[y]) & 0xff]);
+				_x = (_x + 1) & 0xff;
+				_y = (_state[_x] + _y) & 0xff;
+				tmp = _state[_x];
+				_state[_x] = _state[_y];
+				_state[_y] = tmp;
+				dataOut[k - off + offOut] = (Byte)(dataIn[k] ^ _state[(_state[_x] + _state[_y]) & 0xff]);
 			}
 		}
 
@@ -63,9 +63,14 @@ namespace A2v10.Pdf.Crypto
 			Encrypt(dataIn, 0, dataIn.Length, dataOut, 0);
 		}
 
-		public void Encrypt(Byte[] data)
+		public Byte[] EncryptData(Byte[] data)
 		{
-			Encrypt(data, 0, data.Length, data, 0);
+			if (data == null)
+				return null;
+			Int32 len = data.Length;
+			Byte[] output = new Byte[len];
+			Encrypt(data, 0, len, output, 0);
+			return output;
 		}
 	}
 }

@@ -82,7 +82,7 @@ namespace A2v10.Pdf
 			var uValue = elem.Get<PdfString>("U").ToISOBytes();
 			var filter = elem.Get<PdfName>("Filter")?.Name;
 
-			AlgRevision cryptoMode = AlgRevision.STANDARD_ENCRYPTION_128;
+			EncryptAlg cryptoMode = EncryptAlg.STANDARD_ENCRYPTION_128;
 
 			switch (rValue)
 			{
@@ -95,7 +95,7 @@ namespace A2v10.Pdf
 					{
 						if (stdCfObj.Get<PdfName>("CFM")?.Name == "V2")
 						{
-							cryptoMode = AlgRevision.STANDARD_ENCRYPTION_128;
+							cryptoMode = EncryptAlg.STANDARD_ENCRYPTION_128;
 						}
 					}
 					break;

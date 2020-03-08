@@ -3,11 +3,10 @@
 
 using System;
 using System.IO;
-using System.Security.Cryptography;
 
 namespace A2v10.Pdf.Crypto
 {
-	public enum AlgRevision
+	public enum EncryptAlg
 	{
 		STANDARD_ENCRYPTION_40 = 2,
 		STANDARD_ENCRYPTION_128 = 3,
@@ -18,7 +17,7 @@ namespace A2v10.Pdf.Crypto
 	public class PdfEncryption
 	{
 		private Int32 _keyLength;
-		private AlgRevision _revision;
+		private EncryptAlg _alg;
 		private Int32 _keySize;
 		private Byte[] _documentId;
 		private Int64 _permissions;
@@ -46,39 +45,33 @@ namespace A2v10.Pdf.Crypto
 
 		public PdfEncryption()
 		{
-			_revision = AlgRevision.STANDARD_ENCRYPTION_40;
+			_alg = EncryptAlg.STANDARD_ENCRYPTION_40;
 			_keyLength = 40;
 			_keySize = 0;
 		}
 
-		virtual public void SetCryptoMode(AlgRevision revision, Int32 keyLength)
+		virtual public void SetCryptoMode(EncryptAlg revision, Int32 keyLength)
 		{
-			//encryptMetadata = (mode & PdfWriter.DO_NOT_ENCRYPT_METADATA) != PdfWriter.DO_NOT_ENCRYPT_METADATA;
-			//embeddedFilesOnly = (mode & PdfWriter.EMBEDDED_FILES_ONLY) == PdfWriter.EMBEDDED_FILES_ONLY;
-			//mode &= PdfWriter.ENCRYPTION_MASK;
+			
+			//encryptMetadata = DO_NOT_ENCRYPT_METADATA;
+			//embeddedFilesOnly = EMBEDDED_FILES_ONLY;
+
 			_encryptMetadata = true;
-			_revision = revision;
-			switch (_revision)
+			_alg = revision;
+			switch (_alg)
 			{
-				case AlgRevision.STANDARD_ENCRYPTION_40:
-					_encryptMetadata = true;
-					//embeddedFilesOnly = false;
+				case EncryptAlg.STANDARD_ENCRYPTION_40:
 					_keyLength = 40;
 					break;
-				case AlgRevision.STANDARD_ENCRYPTION_128:
-					//embeddedFilesOnly = false;
+				case EncryptAlg.STANDARD_ENCRYPTION_128:
 					if (keyLength > 0)
 						_keyLength = keyLength;
 					else
 						_keyLength = 128;
 					break;
-				case AlgRevision.AES_128:
-					_keyLength = 128;
-					break;
-				case AlgRevision.AES_256:
-					_keyLength = 256;
-					_keySize = 32;
-					break;
+				case EncryptAlg.AES_128:
+				case EncryptAlg.AES_256:
+					throw new NotImplementedException("AES yet not impletmented");
 				default:
 					throw new ArgumentException("No valid encryption.mode");
 			}
@@ -121,11 +114,11 @@ namespace A2v10.Pdf.Crypto
 
 		void SetupUserKey()
 		{
-			if (_revision == AlgRevision.STANDARD_ENCRYPTION_128 || _revision == AlgRevision.AES_128)
+			if (_alg == EncryptAlg.STANDARD_ENCRYPTION_128 || _alg == EncryptAlg.AES_128)
 			{
 				var md5 = new MD5();
-				md5.BlockUpdate(_pad, 0, _pad.Length);
-				md5.BlockUpdate(_documentId, 0, _documentId.Length);
+				md5.BlockUpdate(_pad);
+				md5.BlockUpdate(_documentId);
 				Byte[] digest = md5.DoFinal();
 
 				Array.Copy(digest, 0, _userKey, 0, 16);
@@ -149,7 +142,7 @@ namespace A2v10.Pdf.Crypto
 		{
 			Byte[] ownerKey = new Byte[32];
 			Byte[] digest = MD5.Digest(ownerPad);
-			if (_revision == AlgRevision.STANDARD_ENCRYPTION_128 || _revision == AlgRevision.AES_128)
+			if (_alg == EncryptAlg.STANDARD_ENCRYPTION_128 || _alg == EncryptAlg.AES_128)
 			{
 				Byte[] mkey = new Byte[_keyLength / 8];
 
@@ -186,8 +179,8 @@ namespace A2v10.Pdf.Crypto
 
 			//fixed by ujihara in order to follow PDF refrence
 			var md5 = new MD5();
-			md5.BlockUpdate(userPad, 0, userPad.Length);
-			md5.BlockUpdate(ownerKey, 0, ownerKey.Length);
+			md5.BlockUpdate(userPad);
+			md5.BlockUpdate(ownerKey);
 
 			Byte[] ext = new Byte[4];
 			ext[0] = (Byte)permissions;
@@ -196,16 +189,16 @@ namespace A2v10.Pdf.Crypto
 			ext[3] = (Byte)(permissions >> 24);
 			md5.BlockUpdate(ext, 0, 4);
 			if (_documentId != null)
-				md5.BlockUpdate(_documentId, 0, _documentId.Length);
+				md5.BlockUpdate(_documentId);
 			if (!_encryptMetadata)
-				md5.BlockUpdate(_metadataPad, 0, _metadataPad.Length);
+				md5.BlockUpdate(_metadataPad);
 			Byte[] hash = md5.DoFinal();
 
 			Byte[] digest = new Byte[_mkey.Length];
 			Array.Copy(hash, 0, digest, 0, _mkey.Length);
 
 			// only use the really needed bits as input for the hash
-			if (_revision == AlgRevision.STANDARD_ENCRYPTION_128 || _revision == AlgRevision.AES_128)
+			if (_alg == EncryptAlg.STANDARD_ENCRYPTION_128 || _alg == EncryptAlg.AES_128)
 			{
 				for (Int32 k = 0; k < 50; ++k)
 					Array.Copy(MD5.Digest(digest), 0, digest, 0, _mkey.Length);
@@ -218,9 +211,10 @@ namespace A2v10.Pdf.Crypto
 		{
 			MemoryStream ba = new MemoryStream();
 
-			StandardDecryption dec = new StandardDecryption(_key, _revision);
+			var rc4 = new RC4(_key);
 
-			Byte[] b2 = dec.Update(b, 0, b.Length);
+			Byte[] b2 = rc4.EncryptData(b);
+
 			if (b2 != null)
 				ba.Write(b2, 0, b2.Length);
 
@@ -229,22 +223,25 @@ namespace A2v10.Pdf.Crypto
 
 		virtual public void SetHashKey(Int32 number, Int32 generation)
 		{
-			if (_revision == AlgRevision.AES_256)
+			if (_alg == EncryptAlg.AES_256)
 				return;
 
-			Byte[] extra = new Byte[5];
 
 			var md5 = new MD5();
+			md5.BlockUpdate(_mkey);
 
-			extra[0] = (Byte)number;
-			extra[1] = (Byte)(number >> 8);
-			extra[2] = (Byte)(number >> 16);
-			extra[3] = (Byte)generation;
-			extra[4] = (Byte)(generation >> 8);
-			md5.BlockUpdate(_mkey, 0, _mkey.Length);
-			md5.BlockUpdate(extra, 0, extra.Length);
-			if (_revision == AlgRevision.AES_128)
-				md5.BlockUpdate(_salt, 0, _salt.Length);
+			Byte[] xtra = new Byte[5];
+			xtra[0] = (Byte) number;
+			xtra[1] = (Byte) (number >> 8);
+			xtra[2] = (Byte) (number >> 16);
+			xtra[3] = (Byte) generation;
+			xtra[4] = (Byte) (generation >> 8);
+
+			md5.BlockUpdate(xtra);
+
+			if (_alg == EncryptAlg.AES_128)
+				md5.BlockUpdate(_salt);
+
 			_key = md5.DoFinal();
 
 			_keySize = _mkey.Length + 5;

@@ -1,5 +1,4 @@
-﻿
-// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
+﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 
 using System;
@@ -11,12 +10,12 @@ namespace A2v10.Pdf.Crypto
 		private const Int32 _digestSize = 16;
 
 		private Int32 _byteCount;
-		private Int32 _xOff;
 
-		private Byte[] _buffer4 = new Byte[4];
-		private Int32 _buffer4Offset;
+		private Byte[] _buf4 = new Byte[4];
+		private Int32 _buf4Offset;
 
-		private readonly UInt32[] _X = new UInt32[16];
+		private readonly UInt32[] _X = new UInt32[_digestSize];
+		private Int32 _xOffset;
 
 		private static readonly Int32[,] _S = new Int32[,] {
 			{ 7, 12, 17, 22 },
@@ -46,21 +45,28 @@ namespace A2v10.Pdf.Crypto
 
 		public void Update(Byte input)
 		{
-			_buffer4[_buffer4Offset++] = input;
+			_buf4[_buf4Offset++] = input;
 
-			if (_buffer4Offset == _buffer4.Length)
+			if (_buf4Offset == _buf4.Length)
 			{
-				ProcessWord(_buffer4, 0);
-				_buffer4Offset = 0;
+				//ProcessWord(_buffer4, 0);
+				_X[_xOffset] = BitConverter.ToUInt32(_buf4, 0);
+				if (++_xOffset == _digestSize)
+					ProcessBlock();
+
+				_buf4Offset = 0;
 			}
 
 			_byteCount++;
 		}
 
-		public void BlockUpdate(Byte[] input, Int32 inOff, Int32 length)
+		public void BlockUpdate(Byte[] input, Int32 inOff = 0, Int32 length = 0)
 		{
+			if (length == 0)
+				length = input.Length;
+
 			// fill the current word
-			while ((_buffer4Offset != 0) && (length > 0))
+			while ((_buf4Offset != 0) && (length > 0))
 			{
 				Update(input[inOff]);
 				inOff++;
@@ -68,13 +74,15 @@ namespace A2v10.Pdf.Crypto
 			}
 
 			// process whole words.
-			while (length > _buffer4.Length)
+			while (length > _buf4.Length)
 			{
-				ProcessWord(input, inOff);
+				_X[_xOffset] = BitConverter.ToUInt32(input, inOff);
+				if (++_xOffset == _digestSize)
+					ProcessBlock();
 
-				inOff += _buffer4.Length;
-				length -= _buffer4.Length;
-				_byteCount += _buffer4.Length;
+				inOff += _buf4.Length;
+				length -= _buf4.Length;
+				_byteCount += _buf4.Length;
 			}
 
 			// Load in the remainder.
@@ -126,16 +134,6 @@ namespace A2v10.Pdf.Crypto
 			UnpackUint32(_H[1], output, 4);
 			UnpackUint32(_H[2], output, 8);
 			UnpackUint32(_H[3], output, 12);
-		}
-
-		void ProcessWord(Byte[] input, Int32 inOff)
-		{
-			_X[_xOff] = BitConverter.ToUInt32(input, inOff);
-
-			if (++_xOff == 16)
-			{
-				ProcessBlock();
-			}
 		}
 
 		static UInt32 RotateLeft(UInt32 x, Int32 n)
@@ -250,7 +248,7 @@ namespace A2v10.Pdf.Crypto
 			_H[2] += c;
 			_H[3] += d;
 
-			_xOff = 0;
+			_xOffset = 0;
 		}
 
 		void Finish()
@@ -260,10 +258,10 @@ namespace A2v10.Pdf.Crypto
 			// add the pad bytes.
 			Update(128);
 
-			while (_buffer4Offset != 0)
+			while (_buf4Offset != 0)
 				Update(0);
 
-			ProcessLength(bitLength, _xOff);
+			ProcessLength(bitLength, _xOffset);
 			ProcessBlock();
 		}
 	}
