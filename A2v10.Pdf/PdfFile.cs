@@ -2,7 +2,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using System.IO;
 using A2v10.Pdf.Crypto;
 
 namespace A2v10.Pdf
@@ -28,13 +28,15 @@ namespace A2v10.Pdf
 
 			if (type != null)
 			{
-				switch (type.Name)
+				switch (elem)
 				{
-					case "Catalog":
-						_catalog = elem as PdfCatalog;
+					case PdfCatalog catalog:
+						_catalog = catalog;
 						break;
-					case "XRef":
-						_xRefs.Add(elem as PdfXRef);
+					case PdfXRef xref:
+						_xRefs.Add(xref);
+						break;
+					case PdfPages pages:
 						break;
 				}
 			}
@@ -140,17 +142,40 @@ namespace A2v10.Pdf
 			}
 			DecodeTrailer();
 
+			List<PdfElement> objStreams = new List<PdfElement>();
 			foreach (var o in _objects)
 			{
 				if (o.Value.IsEncrypted && o.Value.IsStream)
 				{
+					Console.WriteLine(o.Key);
+					Console.WriteLine("===================");
 					o.Value.Decrypt(_decryptor, o.Key);
 				}
+				if (o.Value.IsObjStream)
+					objStreams.Add(o.Value);
 			}
-			/*
-			var stm = _objects["29 0"];
-			stm.Decrypt(_decryptor, 29, 0);
-			*/
+
+			foreach (var o in objStreams)
+				ParseObjStream(o);
+
+			var stm = _objects["10 0"];
+			stm.Decrypt(_decryptor, "10 0");
+		}
+
+		void ParseObjStream(PdfElement elem)
+		{
+			PdfStream stream = elem.Get<PdfStream>("_stream");
+			var ms = new MemoryStream(stream.Bytes);
+			using (var br = new BinaryReader(ms))
+			{
+				PdfReader rdr = PdfReader.Create(br);
+				foreach(var obj in rdr.ReadObjStream())
+				{
+					var name = $"{obj.Item1} 0";
+					if (obj.Item2 is PdfDictionary objDict)
+						AddObject(name, objDict);
+				}
+			}
 		}
 	}
 }

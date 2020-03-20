@@ -120,12 +120,25 @@ namespace A2v10.Pdf
 		private readonly String _value;
 
 		public PdfName(String value)
-			: base(ObjectType.HexString)
+			: base(ObjectType.Name)
 		{
 			_value = value;
 		}
 
 		public String Name => _value;
+	}
+
+	public class PdfBoolean : PdfObject
+	{
+		private readonly Boolean _value;
+
+		public PdfBoolean(Boolean value)
+			: base(ObjectType.Boolean)
+		{
+			_value = value;
+		}
+
+		public Boolean Value => _value;
 	}
 
 	public class PdfDictionary: PdfObject

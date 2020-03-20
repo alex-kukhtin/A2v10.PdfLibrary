@@ -27,6 +27,8 @@ namespace A2v10.Pdf
 					return new PdfCatalog(dict);
 				case "Page":
 					return new PdfPage(dict);
+				case "Pages":
+					return new PdfPages(dict);
 				case "XRef":
 					return new PdfXRef(dict);
 			}
@@ -50,6 +52,7 @@ namespace A2v10.Pdf
 		}
 
 		public Boolean IsStream => _dict.Get<PdfStream>("_stream") != null;
+		public Boolean IsObjStream => _dict.Get<PdfName>("Type")?.Name == "ObjStm";
 
 		public virtual void Decrypt(PdfEncryption decryptor, String key)
 		{
@@ -101,6 +104,14 @@ namespace A2v10.Pdf
 	{
 		public PdfPage(PdfDictionary dict)
 			: base(dict) {
+		}
+	}
+
+	public class PdfPages : PdfElement
+	{
+		public PdfPages(PdfDictionary dict)
+			: base(dict)
+		{
 		}
 	}
 

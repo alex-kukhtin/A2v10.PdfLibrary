@@ -12,6 +12,7 @@ namespace A2v10.Pdf
 		String,
 		HexString,
 		Number,
+		Boolean,
 		Name,
 		Comment,
 		StartArray,
@@ -21,6 +22,7 @@ namespace A2v10.Pdf
 		Header,
 		Trailer,
 		Eof,
+		Undefined,
 	}
 
 	public enum Ider
@@ -30,6 +32,12 @@ namespace A2v10.Pdf
 		stream,
 		endstream,
 		startxref,
+	}
+
+	class LexerLookup
+	{
+		public Token Token;
+		public String StringValue;
 	}
 
 	public class Lexer
@@ -58,6 +66,8 @@ namespace A2v10.Pdf
 		public Int32 IntValue => Int32.Parse(_stringValue);
 		public String Version => _version;
 		public Ider Ider => (Ider) Enum.Parse(typeof(Ider), _stringValue);
+		public Boolean BoolValue => _stringValue == "true";
+		public Int32 Position => (Int32) _reader.BaseStream.Position;
 
 		public Boolean NextToken()
 		{
@@ -174,16 +184,77 @@ namespace A2v10.Pdf
 			return dict;
 		}
 
-		PdfObject ReadArray(String name)
+
+		public PdfObject ReadArray(String name)
 		{
 			var arr = new PdfArray();
+			Int32 step = 0;
+			LexerLookup s1 = new LexerLookup();
+			LexerLookup s2 = new LexerLookup();
+
+			void ResetLookup()
+			{
+				if (step == 0)
+					return;
+				else if (step == 1)
+				{
+					arr.Add(PlainPdfObject(s1.Token, s1.StringValue));
+				} 
+				else if (step == 2)
+				{
+					arr.Add(PlainPdfObject(s1.Token, s1.StringValue));
+					arr.Add(PlainPdfObject(s2.Token, s2.StringValue));
+				}
+				step = 0;
+			}
+
 			while (NextToken())
 			{
 				switch (Token)
 				{
 					case Token.EndArray:
+						ResetLookup();
 						return arr;
-					default: 
+					case Token.StartArray:
+						arr.Add(ReadArray(name));
+						break;
+					case Token.Number:
+						switch (step)
+						{
+							case 0:
+								step = 1;
+								s1.Token = Token;
+								s1.StringValue = StringValue;
+								break;
+							case 1:
+								step = 2;
+								s2.Token = Token;
+								s2.StringValue = StringValue;
+								break;
+							case 2:
+								step = 1;
+								arr.Add(PlainPdfObject(s1.Token, s1.StringValue));
+								s1 = s2;
+								s2.Token = Token;
+								s2.StringValue = StringValue;
+								break;
+						}
+						break;
+					case Token.Ider:
+						if (StringValue == "R" && step > 0)
+						{
+							arr.Add(new PdfName($"{s1.StringValue} {s2.StringValue}"));
+							step = 0;
+						}
+						else
+						{
+							ResetLookup();
+							arr.Add(PlainPdfObject());
+						}
+						break;
+					default:
+						ResetLookup();
+						/*
 						if (IsReference(name))
 						{
 							String xRef = StringValue;
@@ -196,19 +267,20 @@ namespace A2v10.Pdf
 						}
 						else
 						{
-							arr.Add(PlainPdfObject());
-						}
+						*/
+						arr.Add(PlainPdfObject());
+						//}
 						break;
 				}
 			}
 			throw new LexerException($"Invalid array type: {Token}");
 		}
 
-		const String _refNames = "Encrypt|Root|Info|Metadata|PageLabels|Pages|Parent|Resources|Contents|";
+		const String _refNames = "Encrypt|Root|Info|Metadata|PageLabels|Pages|Parent|Resources|Contents|Cs6|GS1|TT1|TT2|TT3|TT4|CIDSet|FontFile2|FontDescriptor|ToUnicode|DescendantFonts|ICCBased|";
 
 		Boolean IsReference(String name)
 		{
-			return _refNames.Contains($"{name}|");
+			return name != null && _refNames.Contains($"{name}|");
 		}
 
 		PdfObject ReadDictionaryValue(String name)
@@ -250,8 +322,26 @@ namespace A2v10.Pdf
 					return new PdfHexString(StringValue);
 				case Token.Name:
 					return new PdfName(StringValue);
+				case Token.Boolean:
+					return new PdfBoolean(BoolValue);
 			}
 			throw new LexerException($"Invalid token for plain object '{Token}'");
+		}
+
+		static PdfObject PlainPdfObject(Token token, String value)
+		{
+			switch (token)
+			{
+				case Token.Number:
+					if (value.Contains("."))
+						return new PdfReal(value);
+					return new PdfInteger(value);
+				case Token.String:
+					return new PdfString(value);
+				case Token.HexString:
+					return new PdfHexString(value);
+			}
+			throw new LexerException($"Invalid token for array plain object '{token}' (value='{value}')");
 		}
 
 		void CheckHeader()
@@ -295,6 +385,8 @@ namespace A2v10.Pdf
 		void ReadIder(Int32 ch)
 		{
 			ReadName(ch);
+			if (_stringValue == "true" || _stringValue == "false")
+				_token = Token.Boolean;
 		}
 
 		String ReadToEol(Int32 ch)

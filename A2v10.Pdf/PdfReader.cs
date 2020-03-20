@@ -1,7 +1,9 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Util.Zlib;
 
 namespace A2v10.Pdf
@@ -67,7 +69,7 @@ namespace A2v10.Pdf
 									switch (_lexer.Ider)
 									{
 										case Ider.obj:
-											var obj = ReadObject(objId);
+											var obj = ReadObject();
 											file.AddObject(objId, obj);
 											break;
 										default:
@@ -87,7 +89,54 @@ namespace A2v10.Pdf
 			_reader?.Dispose();
 		}
 
-		public PdfDictionary ReadObject(String objId)
+		public IEnumerable<Tuple<Int32, PdfObject>> ReadObjStream()
+		{
+			Dictionary<Int32, Int32> _refs = new Dictionary<Int32, Int32>();
+			Boolean bVal = false;
+			Int32 nKey = 0;
+			Int32 _startPos = -1;
+
+			while (_lexer.NextToken())
+			{
+				switch (_lexer.Token)
+				{
+					case Token.Number:
+						if (bVal) {
+							_refs.Add(nKey, _lexer.IntValue);
+							bVal = false;
+						}
+						else
+						{
+							bVal = true;
+							nKey = _lexer.IntValue;
+						}
+						break;
+					case Token.StartDictionary:
+					case Token.StartArray:
+						if (_startPos == -1)
+							_startPos = _lexer.Position;
+						Int32 pos = _lexer.Position - _startPos;
+						PdfObject obj = null;
+						if (_lexer.Token == Token.StartDictionary)
+							obj = _lexer.ReadDictionary();
+						else if (_lexer.Token == Token.StartArray)
+							obj = _lexer.ReadArray(null);
+						var k = _refs.FirstOrDefault(kv => Math.Abs(kv.Value - pos) < 3);
+						if (k.Key != 0)
+						{
+							_refs.Remove(k.Key);
+							yield return Tuple.Create(k.Key, obj);
+						}
+						if (_refs.Count == 0)
+						{
+							yield break;
+						}
+						break;
+				}
+			}
+		}
+
+		public PdfDictionary ReadObject()
 		{
 			PdfDictionary dict = null;
 			while (_lexer.NextToken())
