@@ -17,6 +17,7 @@ namespace A2v10.Pdf
 		private PdfXRef _trailer;
 		private Byte[] _documentId;
 		private PdfEncryption _decryptor;
+		private List<PdfName> _pages = new List<PdfName>();
 
 		private PdfCatalog _catalog;
 
@@ -37,6 +38,7 @@ namespace A2v10.Pdf
 						_xRefs.Add(xref);
 						break;
 					case PdfPages pages:
+						//foreach (var r in pages.Kids)
 						break;
 				}
 			}
@@ -158,8 +160,8 @@ namespace A2v10.Pdf
 			foreach (var o in objStreams)
 				ParseObjStream(o);
 
-			var stm = _objects["10 0"];
-			stm.Decrypt(_decryptor, "10 0");
+			//var stm = _objects["10 0"];
+			//stm.Decrypt(_decryptor, "10 0");
 		}
 
 		void ParseObjStream(PdfElement elem)
