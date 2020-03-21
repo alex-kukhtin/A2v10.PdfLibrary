@@ -124,6 +124,7 @@ namespace A2v10.Pdf
 					ReadHexString();
 					break;
 				case '-':
+				case '.':
 					_token = Token.Number;
 					ReadNumber(ch);
 					break;
@@ -254,22 +255,7 @@ namespace A2v10.Pdf
 						break;
 					default:
 						ResetLookup();
-						/*
-						if (IsReference(name))
-						{
-							String xRef = StringValue;
-							NextToken();
-							xRef += $" {StringValue}"; // with space
-							NextToken();
-							if (Token != Token.String && StringValue != "R")
-								throw new LexerException($"Invalid reference {name}");
-							arr.Add(new PdfName(xRef));
-						}
-						else
-						{
-						*/
 						arr.Add(PlainPdfObject());
-						//}
 						break;
 				}
 			}
@@ -309,7 +295,7 @@ namespace A2v10.Pdf
 			}
 		}
 
-		PdfObject PlainPdfObject()
+		public PdfObject PlainPdfObject()
 		{
 			switch (Token) {
 				case Token.Number:

@@ -17,14 +17,20 @@ namespace A2v10.Pdf
 		private PdfXRef _trailer;
 		private Byte[] _documentId;
 		private PdfEncryption _decryptor;
-		private List<PdfName> _pages = new List<PdfName>();
+		private List<PdfName> _pageRefs = new List<PdfName>();
+		private Dictionary<String, PdfPage> _pages = new Dictionary<String, PdfPage>();
+		private Dictionary<String, PdfFont> _fonts = new Dictionary<String, PdfFont>();
+		private PdfExtGState _extGState;
 
 		private PdfCatalog _catalog;
+
+
+		public PdfExtGState ExtGState => _extGState;
 
 		public void AddObject(String name, PdfDictionary dict)
 		{
 			var type = dict.Get<PdfName>("Type");
-			var elem = PdfElement.Create(type, dict);
+			var elem = PdfElement.Create(type, dict, this);
 			_objects.Add(name, elem);
 
 			if (type != null)
@@ -38,10 +44,28 @@ namespace A2v10.Pdf
 						_xRefs.Add(xref);
 						break;
 					case PdfPages pages:
-						//foreach (var r in pages.Kids)
+						foreach (var pageRef in pages.Kids())
+							_pageRefs.Add(pageRef);
+						break;
+					case PdfPage page:
+						_pages.Add(name, page);
+						break;
+					case PdfFont font:
+						_fonts.Add(name, font);
+						break;
+					case PdfExtGState extGState:
+						_extGState = extGState;
 						break;
 				}
 			}
+		}
+
+		public PdfPage GetPage(Int32 index)
+		{
+			if (index < 0 || index >= _pageRefs.Count)
+				throw new ArgumentOutOfRangeException(nameof(index));
+			var pageRef = _pageRefs[index];
+			return _pages[pageRef.Name];
 		}
 
 		void DecodeTrailer()
@@ -149,8 +173,6 @@ namespace A2v10.Pdf
 			{
 				if (o.Value.IsEncrypted && o.Value.IsStream)
 				{
-					Console.WriteLine(o.Key);
-					Console.WriteLine("===================");
 					o.Value.Decrypt(_decryptor, o.Key);
 				}
 				if (o.Value.IsObjStream)
@@ -162,6 +184,15 @@ namespace A2v10.Pdf
 
 			//var stm = _objects["10 0"];
 			//stm.Decrypt(_decryptor, "10 0");
+		}
+
+		public Int32 PageCount => _pages.Count;
+
+		public PdfElement GetObject(PdfName name)
+		{
+			if (_objects.TryGetValue(name.Name, out PdfElement elem))
+				return elem;
+			throw new ArgumentOutOfRangeException($"Object {name.Name} not found");
 		}
 
 		void ParseObjStream(PdfElement elem)

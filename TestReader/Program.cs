@@ -15,11 +15,24 @@ namespace TestReader
 	{
 		static void Main(String[] args)
 		{
+			PdfFile file;
 			using (var br = new BinaryReader(File.Open("D:\\_PDF_LIBRARY\\F0103306.pdf", FileMode.Open)))
 			{
 				using (var rdr = PdfReader.Create(br))
 				{
-					rdr.ReadFile();
+					file = rdr.ReadFile();
+				}
+			}
+
+			for (Int32 i=0;  i< file.PageCount; i++)
+			{
+				var page = file.GetPage(i);
+
+				foreach (var contBlock in page.Contents())
+				{
+					contBlock.Trace();
+					contBlock.ReadContent();
+					return;
 				}
 			}
 

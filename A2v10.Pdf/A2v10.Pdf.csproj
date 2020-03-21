@@ -44,12 +44,24 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Content\ContentReader.cs" />
+    <Compile Include="Content\PsContext.cs" />
+    <Compile Include="Content\GraphicState.cs" />
+    <Compile Include="Content\IPsCommand.cs" />
+    <Compile Include="Content\PsBeginText.cs" />
+    <Compile Include="Content\PsGraphicState.cs" />
+    <Compile Include="Content\PsSetTextFont.cs" />
+    <Compile Include="Content\PsShowTextArray.cs" />
     <Compile Include="Crypto\RC4.cs" />
     <Compile Include="Crypto\MD5.cs" />
     <Compile Include="Crypto\PdfEncryption.cs" />
     <Compile Include="Exceptions.cs" />
-    <Compile Include="Objects\Constants.cs" />
+    <Compile Include="Objects\PdfContentBlock.cs" />
     <Compile Include="Objects\PdfElement.cs" />
+    <Compile Include="Objects\PdfExtGState.cs" />
+    <Compile Include="Objects\PdfResource.cs" />
+    <Compile Include="Objects\PdfFont.cs" />
+    <Compile Include="Objects\PdfPage.cs" />
     <Compile Include="Parser\PredictorDecoder.cs" />
     <Compile Include="Parser\Lexer.cs" />
     <Compile Include="Parser\ParserException.cs" />

@@ -3,6 +3,7 @@
 
 using A2v10.Pdf.Crypto;
 using System;
+using System.Collections.Generic;
 
 namespace A2v10.Pdf
 {
@@ -15,9 +16,14 @@ namespace A2v10.Pdf
 			_dict = dict;
 		}
 
+		protected PdfElement(PdfElement elem)
+		{
+			_dict = elem._dict;
+		}
+
 		public virtual Boolean IsEncrypted => true;
 
-		public static PdfElement Create(PdfName name, PdfDictionary dict)
+		public static PdfElement Create(PdfName name, PdfDictionary dict, PdfFile file)
 		{
 			if (name == null)
 				return new PdfElement(dict);
@@ -26,11 +32,15 @@ namespace A2v10.Pdf
 				case "Catalog":
 					return new PdfCatalog(dict);
 				case "Page":
-					return new PdfPage(dict);
+					return new PdfPage(dict, file);
 				case "Pages":
 					return new PdfPages(dict);
 				case "XRef":
 					return new PdfXRef(dict);
+				case "Font":
+					return new PdfFont(dict, file);
+				case "ExtGState":
+					return new PdfExtGState(dict, file);
 			}
 			return new PdfElement(dict);
 		}
@@ -41,7 +51,7 @@ namespace A2v10.Pdf
 		{
 			if (IsFlateDecode)
 			{
-				PdfStream stream = _dict.Get<PdfStream>("_stream");
+				PdfStream stream = Stream;
 				if (stream == null)
 					throw new PdfException("There is no stream for FlateDecode");
 				stream.FlateDecode();
@@ -53,6 +63,7 @@ namespace A2v10.Pdf
 
 		public Boolean IsStream => _dict.Get<PdfStream>("_stream") != null;
 		public Boolean IsObjStream => _dict.Get<PdfName>("Type")?.Name == "ObjStm";
+		public PdfStream Stream => _dict.Get<PdfStream>("_stream");
 
 		public virtual void Decrypt(PdfEncryption decryptor, String key)
 		{
@@ -62,14 +73,26 @@ namespace A2v10.Pdf
 
 		public virtual void Decrypt(PdfEncryption decryptor, Int32 key, Int32 revision)
 		{
-			PdfStream stream = _dict.Get<PdfStream>("_stream");
+			PdfStream stream = Stream;
 			if (stream == null)
 				throw new PdfException("There is no stream for Decrypt");
 			decryptor.SetHashKey(key, revision);
 			stream.Decrypt(decryptor);
 			Decode();
+		}
 
 
+		public virtual void Trace(String name = null)
+		{
+			PdfStream stream = Stream;
+			if (stream == null)
+				return;
+			if (name != null)
+			{
+				Console.WriteLine("===================");
+				Console.WriteLine(name);
+				Console.WriteLine("===================");
+			}
 			var debugString = System.Text.Encoding.ASCII.GetString(stream.Bytes);
 			Console.WriteLine(debugString);
 		}
@@ -94,24 +117,25 @@ namespace A2v10.Pdf
 
 		public override Boolean IsEncrypted => false;
 
-		public PdfName PagesName => _dict.Get<PdfName>("Pages");
+		public PdfName Pages => _dict.Get<PdfName>("Pages");
 		public PdfName MetadataName  => _dict.Get<PdfName>("Metadata");
 		public PdfName PageLabelsName => _dict.Get<PdfName>("PageLabels");
 
 	}
 
-	public class PdfPage : PdfElement
-	{
-		public PdfPage(PdfDictionary dict)
-			: base(dict) {
-		}
-	}
 
 	public class PdfPages : PdfElement
 	{
 		public PdfPages(PdfDictionary dict)
 			: base(dict)
 		{
+		}
+
+		public IEnumerable<PdfName> Kids()
+		{
+			var arr = _dict.Get<PdfArray>("Kids");
+			for (var i = 0; i < arr.Count; i++)
+				yield return arr.Get<PdfName>(i);
 		}
 	}
 

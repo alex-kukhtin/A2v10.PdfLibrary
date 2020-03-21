@@ -1,6 +1,7 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Util.Zlib;
@@ -185,7 +186,7 @@ namespace A2v10.Pdf
 		}
 	}
 
-	public class PdfArray : PdfObject
+	public class PdfArray : PdfObject, IEnumerable<PdfObject>
 	{
 		private readonly IList<PdfObject> _list;
 
@@ -205,6 +206,16 @@ namespace A2v10.Pdf
 		public T Get<T>(Int32 index) where T:class
 		{
 			return _list[index] as T;
+		}
+
+		public IEnumerator<PdfObject> GetEnumerator()
+		{
+			return _list.GetEnumerator();
+		}
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return _list.GetEnumerator();
 		}
 	}
 
