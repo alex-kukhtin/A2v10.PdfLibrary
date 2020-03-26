@@ -1,5 +1,6 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
+using System;
 using System.Collections.Generic;
 
 namespace A2v10.Pdf
@@ -18,6 +19,7 @@ namespace A2v10.Pdf
 		{
 			_file = file;
 			_resources = resource;
+			Reset();
 		}
 
 		public void SaveState()
@@ -29,6 +31,21 @@ namespace A2v10.Pdf
 		public void RestoreState()
 		{
 			_graphicStack.Pop();
+		}
+
+		public void Reset()
+		{
+			_graphicStack.Push(new GraphicState());
+		}
+
+		public void SetFont(PdfFont font, Double fontSize)
+		{
+			GraphicState.SetFont(font, fontSize);
+		}
+
+		public String Decode(Byte[] bytes)
+		{
+			return GraphicState.Font.DecodeString(bytes);
 		}
 	}
 }

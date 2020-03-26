@@ -1,6 +1,7 @@
 ﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
 
 using System;
+using System.IO;
 
 namespace A2v10.Pdf
 {
@@ -8,6 +9,7 @@ namespace A2v10.Pdf
 	{
 		private readonly PdfFile _file;
 		private Boolean _isInit = false;
+		private MapToUnicode _mapToUnicode;
 
 		public PdfFont(PdfDictionary dict, PdfFile file)
 			: base(dict)
@@ -19,24 +21,49 @@ namespace A2v10.Pdf
 		{
 			if (_isInit)
 				return;
-			ParseToUnicode();
+			var baseFont = Get<PdfName>("BaseFont");
+			var subType = Get<PdfName>("Subtype");
+			switch (subType.Name)
+			{
+				case "Type0":
+					ParseType0Font();
+					break;
+			}
 			_isInit = true;
 		}
 
-		void ParseToUnicode()
-		{ 
+		void ParseType0Font()
+		{
+			var enc = Get<PdfName>("Encoding");
+			if (enc != null && enc.Name == "Identity-H")
+			{
+
+			}
 			var uni = _dict.Get<PdfName>("ToUnicode");
 			if (uni != null)
+				ParseToUnicode(uni);
+		}
+
+		void ParseToUnicode(PdfName name)
+		{
+			var uniDec = _file.GetObject(name);
+			if (uniDec.IsStream)
 			{
-				var uniDec = _file.GetObject(uni);
-				if (uniDec.IsStream)
+				using (var ms = new MemoryStream(uniDec.Stream.Bytes))
+				using (var br = new BinaryReader(ms))
 				{
-					uniDec.Trace("ToUnicode");
-					// ToUnicode 
+					_mapToUnicode = ToUnicodeParser.Parse(br);
 				}
-				else
-					throw new ArgumentException("ToUnicode is not a stream");
+				uniDec.Trace("ToUnicode");
 			}
+			else
+				throw new ArgumentException("ToUnicode is not a stream");
+		}
+
+		public String DecodeString(Byte[] bytes)
+		{
+			return _mapToUnicode.Decode(bytes);
 		}
 	}
 }
+

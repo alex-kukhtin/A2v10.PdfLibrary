@@ -20,7 +20,7 @@ namespace A2v10.Pdf
 				switch (el)
 				{
 					case PdfHexString hexString:
-						var bytes = hexString.Value;
+						var str = context.Decode(hexString.Value);
 						break;
 					case PdfReal real:
 						break;

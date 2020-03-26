@@ -25,7 +25,7 @@ namespace A2v10.Pdf
 				var fontRes = fontArgDict.Get<PdfName>(fontName.Name);
 				var font = context.File.GetObject(fontRes) as PdfFont;
 				font.Init();
-				//context.SetFont(fontSize)
+				context.SetFont(font, fontSize);
 			}
 			else
 			{
