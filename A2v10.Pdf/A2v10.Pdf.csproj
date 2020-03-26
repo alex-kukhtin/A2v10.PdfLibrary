@@ -61,6 +61,7 @@
     <Compile Include="Crypto\MD5.cs" />
     <Compile Include="Crypto\PdfEncryption.cs" />
     <Compile Include="Exceptions.cs" />
+    <Compile Include="Geometry\Point.cs" />
     <Compile Include="Objects\MapToUnicode.cs" />
     <Compile Include="Objects\PdfContentBlock.cs" />
     <Compile Include="Objects\PdfElement.cs" />

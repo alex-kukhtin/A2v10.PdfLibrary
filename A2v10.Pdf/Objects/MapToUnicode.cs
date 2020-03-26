@@ -108,5 +108,16 @@ namespace A2v10.Pdf
 			}
 			return null;
 		}
+
+		public void FillMetrics(IDictionary<Int32, Int32> widths, Int32 defaultWidts)
+		{
+			foreach (var kv in _map2)
+			{
+				if (widths.TryGetValue(kv.Key, out Int32 width))
+				{
+					//_metrics[kv.Value] = new MxValue(kv.Key, width);
+				}
+			}
+		}
 	}
 }

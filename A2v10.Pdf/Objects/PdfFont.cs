@@ -11,11 +11,15 @@ namespace A2v10.Pdf
 		private readonly PdfFile _file;
 		private Boolean _isInit = false;
 		private MapToUnicode _mapToUnicode;
+		private Int32 _defaultWidth;
+		private IDictionary<Int32, Int32> _widths;
+
 
 		public PdfFont(PdfDictionary dict, PdfFile file)
 			: base(dict)
 		{
 			_file = file;
+			_defaultWidth = 1000;
 		}
 
 		public void Init()
@@ -40,7 +44,7 @@ namespace A2v10.Pdf
 			{
 				var dscObj = _file.GetObject(dscFont.Get<PdfName>(0));
 				if (dscObj is PdfFont pdfFont)
-					ReadMetrics(pdfFont);
+					ReadWidths(pdfFont);
 			}
 
 			var enc = Get<PdfName>("Encoding");
@@ -51,6 +55,7 @@ namespace A2v10.Pdf
 			var uni = _dict.Get<PdfName>("ToUnicode");
 			if (uni != null)
 				ParseToUnicode(uni);
+			FillMetrics();
 		}
 
 		void ParseToUnicode(PdfName name)
@@ -69,13 +74,12 @@ namespace A2v10.Pdf
 				throw new ArgumentException("ToUnicode is not a stream");
 		}
 
-		void ReadMetrics(PdfFont font)
+		void ReadWidths(PdfFont font)
 		{
-			Int32 dw = 1000;
 			var widths = font.Get<PdfArray>("W");
 			PdfInteger dwObj = font.Get<PdfInteger>("DW");
 			if (dwObj != null)
-				dw = dwObj.Value;
+				_defaultWidth = dwObj.Value;
 			Int32 x1 = 0;
 			Int32 x2 = 0;
 			Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
@@ -103,7 +107,7 @@ namespace A2v10.Pdf
 					}
 				}
 			}
-			FillMetrics(map, dw);
+			_widths = map;
 		}
 
 
@@ -112,9 +116,9 @@ namespace A2v10.Pdf
 			return _mapToUnicode.Decode(bytes);
 		}
 
-		void FillMetrics(IDictionary<Int32, Int32> widths, Int32 defW)
+		void FillMetrics()
 		{
-
+			_mapToUnicode.FillMetrics(_widths, _defaultWidth);
 		}
 	}
 }
