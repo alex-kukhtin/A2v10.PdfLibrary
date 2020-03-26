@@ -45,13 +45,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Content\ContentReader.cs" />
+    <Compile Include="Content\Matix.cs" />
     <Compile Include="Content\PsContext.cs" />
     <Compile Include="Content\GraphicState.cs" />
     <Compile Include="Content\IPsCommand.cs" />
     <Compile Include="Content\PsBeginText.cs" />
     <Compile Include="Content\PsGraphicState.cs" />
+    <Compile Include="Content\PsMoveStartNextLine.cs" />
     <Compile Include="Content\PsSetTextFont.cs" />
-    <Compile Include="Content\PsShowTextArray.cs" />
+    <Compile Include="Content\PsSetTextMatrix.cs" />
+    <Compile Include="Content\PsShowText.cs" />
+    <Compile Include="Content\PsSetCharacterSpacing.cs" />
+    <Compile Include="Content\RenderInfo.cs" />
     <Compile Include="Crypto\RC4.cs" />
     <Compile Include="Crypto\MD5.cs" />
     <Compile Include="Crypto\PdfEncryption.cs" />

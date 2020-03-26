@@ -38,6 +38,12 @@ namespace A2v10.Pdf
 	{
 		public Token Token;
 		public String StringValue;
+
+		public void CopyFrom(LexerLookup f)
+		{
+			Token = f.Token;
+			StringValue = f.StringValue;
+		}
 	}
 
 	public class Lexer
@@ -217,6 +223,7 @@ namespace A2v10.Pdf
 						ResetLookup();
 						return arr;
 					case Token.StartArray:
+						ResetLookup();
 						arr.Add(ReadArray(name));
 						break;
 					case Token.Number:
@@ -233,9 +240,9 @@ namespace A2v10.Pdf
 								s2.StringValue = StringValue;
 								break;
 							case 2:
-								step = 1;
+								step = 2;
 								arr.Add(PlainPdfObject(s1.Token, s1.StringValue));
-								s1 = s2;
+								s1.CopyFrom(s2);
 								s2.Token = Token;
 								s2.StringValue = StringValue;
 								break;

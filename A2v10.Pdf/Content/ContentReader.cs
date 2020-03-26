@@ -31,6 +31,10 @@ namespace A2v10.Pdf
 			_commands.Add("Tf", new PsSetTextFont());
 			_commands.Add("TJ", new PsShowTextArray());
 			_commands.Add("gs", new PsGraphicState());
+			_commands.Add("TD", new PsMoveStartNextLine());
+			_commands.Add("Tm", new PsSetTextMatrix());
+			_commands.Add("Tc", new PsSetCharacterSpacing());
+			_commands.Add("Tj", new PsShowText());
 		}
 
 

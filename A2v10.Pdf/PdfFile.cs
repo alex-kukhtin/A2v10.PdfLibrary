@@ -181,9 +181,6 @@ namespace A2v10.Pdf
 
 			foreach (var o in objStreams)
 				ParseObjStream(o);
-
-			//var stm = _objects["10 0"];
-			//stm.Decrypt(_decryptor, "10 0");
 		}
 
 		public Int32 PageCount => _pages.Count;

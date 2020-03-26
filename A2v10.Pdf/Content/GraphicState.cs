@@ -9,25 +9,41 @@ namespace A2v10.Pdf
 
 		PdfFont _font;
 		Double _fontSize;
+		Double _charSpacing;
+		Double _lineWidth;
+		Double _horzScaling;
 
 		public PdfFont Font => _font;
+		public Double FontSize => _fontSize;
+		public Double HorzScaling => _horzScaling;
 
 		public GraphicState()
 		{
 			_font = null;
 			_fontSize = 0;
+			_charSpacing = 0;
+			_lineWidth = 1;
+			_horzScaling = 1;
 		}
 
 		public GraphicState(GraphicState state)
 		{
 			_font = state._font;
 			_fontSize = state._fontSize;
+			_charSpacing = state._charSpacing;
+			_lineWidth = state._lineWidth;
+			_horzScaling = state._horzScaling;
 		}
 
 		public void SetFont(PdfFont font, Double fontSize)
 		{
 			_font = font;
 			_fontSize = fontSize;
+		}
+
+		public void SetCharacterSpacing(Double val)
+		{
+			_charSpacing = val;
 		}
 	}
 }

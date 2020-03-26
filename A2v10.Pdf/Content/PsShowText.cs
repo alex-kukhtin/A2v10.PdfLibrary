@@ -21,10 +21,11 @@ namespace A2v10.Pdf
 				{
 					case PdfHexString hexString:
 						var str = context.Decode(hexString.Value);
+						context.DisplayString(str);
 						break;
-					case PdfReal real:
-						break;
-					case PdfInteger integer:
+					case IPdfNumber pdfNumber:
+						var num = pdfNumber.NumberValue;
+						context.ApplyTextAdjust(num);
 						break;
 					default:
 						throw new ArgumentException($"PsShowTextArray. Invalid element type {el.GetType()}");
@@ -32,4 +33,17 @@ namespace A2v10.Pdf
 			}
 		}
 	}
+
+	public class PsShowText : IPsCommand
+	{
+		public void Execute(PsContext context, IList<PdfObject> args)
+		{
+			if (args[0] is PdfHexString hexString)
+			{
+				var str = context.Decode(hexString.Value);
+				context.DisplayString(str);
+			}
+		}
+	}
+
 }

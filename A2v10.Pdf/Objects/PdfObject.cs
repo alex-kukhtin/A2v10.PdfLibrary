@@ -10,6 +10,11 @@ using A2v10.Pdf.Crypto;
 
 namespace A2v10.Pdf
 {
+	public interface IPdfNumber
+	{
+		Double NumberValue { get; }
+	}
+
 	public abstract class PdfObject
 	{
 		public enum ObjectType
@@ -46,7 +51,7 @@ namespace A2v10.Pdf
 			: base(ObjectType.Null) { }
 	}
 
-	public class PdfInteger : PdfObject
+	public class PdfInteger : PdfObject, IPdfNumber
 	{
 		public PdfInteger(String value)
 			: base(ObjectType.Indirect)
@@ -55,9 +60,12 @@ namespace A2v10.Pdf
 		}
 
 		public Int32 Value { get; }
+
+		// IPdfNumber
+		public Double NumberValue => (Double) Value;
 	}
 
-	public class PdfReal : PdfObject 
+	public class PdfReal : PdfObject, IPdfNumber
 	{
 		public PdfReal(String value)
 			: base(ObjectType.Real)
@@ -66,6 +74,9 @@ namespace A2v10.Pdf
 		}
 
 		public Double Value { get; }
+
+		// IPdfNumber
+		public Double NumberValue => Value;
 	}
 
 

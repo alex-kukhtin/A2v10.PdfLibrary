@@ -9,6 +9,8 @@ namespace A2v10.Pdf
 	{
 		public void Execute(PsContext context, IList<PdfObject> args)
 		{
+			context.SetTextMatrix(new Matrix());
+			context.BeginText();
 		}
 	}
 
@@ -16,6 +18,8 @@ namespace A2v10.Pdf
 	{
 		public void Execute(PsContext context, IList<PdfObject> args)
 		{
+			context.SetTextMatrix(null);
+			context.EndText();
 		}
 	}
 }

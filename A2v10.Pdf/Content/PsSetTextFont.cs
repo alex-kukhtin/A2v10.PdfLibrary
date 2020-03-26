@@ -14,10 +14,8 @@ namespace A2v10.Pdf
 			var fontSizeArg = args[1];
 
 			Double fontSize = 1;
-			if (fontSizeArg is PdfInteger fsInt)
-				fontSize = fsInt.Value;
-			else if (fontSizeArg is PdfReal fsReal)
-				fontSize = fsReal.Value;
+			if (fontSizeArg is IPdfNumber fsNumber)
+				fontSize = fsNumber.NumberValue;
 
 			var fontsArg = context.Resources.Get<PdfObject>("Font");
 			if (fontsArg is PdfDictionary fontArgDict)
