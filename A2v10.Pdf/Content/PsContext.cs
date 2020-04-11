@@ -10,6 +10,7 @@ namespace A2v10.Pdf
 		private readonly PdfFile _file;
 		private readonly PdfResource _resources;
 		private readonly Stack<GraphicState> _graphicStack = new Stack<GraphicState>();
+		private readonly PageContent _content;
 
 		private Matrix _textLineMx;
 		private Matrix _textMx;
@@ -20,10 +21,11 @@ namespace A2v10.Pdf
 		public Matrix TextLineMatrix => _textLineMx;
 
 
-		public PsContext(PdfFile file, PdfResource resource)
+		public PsContext(PdfFile file, PdfPage page)
 		{
 			_file = file;
-			_resources = resource;
+			_resources = page.Resources();
+			_content = page.Content;
 			Reset();
 		}
 
@@ -77,7 +79,14 @@ namespace A2v10.Pdf
 
 		void RenderText(RenderInfo ri)
 		{
+			Line baseline = ri.GetBaseline();
+			var tc = new TextChunk(ri.Text, CreateLocation(ri, baseline));
+			_content.AddChunk(tc);
+		}
 
+		Location CreateLocation(RenderInfo ri, Line baseline)
+		{
+			return new Location(baseline, ri.GetSpaceWidth());
 		}
 
 		public void BeginText()
@@ -88,6 +97,11 @@ namespace A2v10.Pdf
 		public void EndText()
 		{
 
+		}
+
+		public void DrawRectangle(Rectangle rect)
+		{
+			_content.AddPath(rect);
 		}
 	}
 }

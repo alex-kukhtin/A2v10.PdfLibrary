@@ -24,16 +24,31 @@ namespace TestReader
 				}
 			}
 
+			var wr = new HtmlWriter();
+			wr.StartDocument();
+
 			for (Int32 i=0;  i< file.PageCount; i++)
 			{
 				var page = file.GetPage(i);
 
-				foreach (var contBlock in page.Contents())
+				using (var ms = new MemoryStream())
 				{
-					contBlock.Trace();
-					contBlock.ReadContent();
-					return;
+					foreach (var contBlock in page.Contents())
+					{
+						contBlock.WriteTo(ms);
+						contBlock.Trace();
+					}
+					ms.Seek(0, SeekOrigin.Begin);
+					using (var rdr = ContentReader.Create(ms, file, page))
+					{
+						rdr.ParseContent();
+					}
 				}
+				page.Layout();
+				page.Write(wr);
+				wr.EndDocument();
+
+				System.IO.File.WriteAllText("d:\\temp\\converted.html", wr.GetText(), Encoding.UTF8);
 			}
 
 			/*

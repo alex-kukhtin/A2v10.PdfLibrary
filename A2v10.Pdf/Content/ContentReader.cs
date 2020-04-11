@@ -31,10 +31,15 @@ namespace A2v10.Pdf
 			_commands.Add("Tf", new PsSetTextFont());
 			_commands.Add("TJ", new PsShowTextArray());
 			_commands.Add("gs", new PsGraphicState());
+			_commands.Add("q",  new PsPushGraphicState());
+			_commands.Add("Q",  new PsPopGraphicState());
 			_commands.Add("TD", new PsMoveStartNextLine());
 			_commands.Add("Tm", new PsSetTextMatrix());
 			_commands.Add("Tc", new PsSetCharacterSpacing());
 			_commands.Add("Tj", new PsShowText());
+			_commands.Add("Tw", new PsSetWordSpacing());
+			_commands.Add("re", new PsRectagle());
+			//f - fill
 		}
 
 
@@ -65,7 +70,7 @@ namespace A2v10.Pdf
 		public void ParseContent()
 		{
 			IList<PdfObject> args = new List<PdfObject>();
-			var context = new PsContext(_file, _page.Resources());
+			var context = new PsContext(_file, _page);
 			while (_lexer.NextToken())
 			{
 				switch (_lexer.Token)
@@ -91,6 +96,10 @@ namespace A2v10.Pdf
 				cmd.Execute(context, args);
 			else
 			{
+				/* g - set grey level (nonstroking)
+				   cs = set color space (nonstroking)
+				   scn = set color (nonstroking ICCBased)
+				*/
 				int z = 55;
 			}
 		}

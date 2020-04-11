@@ -6,12 +6,27 @@ using System.Text;
 
 namespace A2v10.Pdf
 {
+
+	public struct MxValue
+	{
+		public Int32 Key;
+		public Int32 Width;
+
+		public MxValue(Int32 key, Int32 width)
+		{
+			Key = key;
+			Width = width;
+		}
+	}
+
 	public class MapToUnicode
 	{
 		private IDictionary<Int32, String> _map1 = new Dictionary<Int32, String>();
 		private IDictionary<Int32, String> _map2 = new Dictionary<Int32, String>();
 
 		Encoding _encoding = new UnicodeEncoding(bigEndian: true, byteOrderMark: false);
+
+		private Dictionary<Char, MxValue> _metrics = new Dictionary<Char, MxValue>();
 
 		public void AddChar(Byte[] source, Byte[] code)
 		{
@@ -115,9 +130,16 @@ namespace A2v10.Pdf
 			{
 				if (widths.TryGetValue(kv.Key, out Int32 width))
 				{
-					//_metrics[kv.Value] = new MxValue(kv.Key, width);
+					_metrics[kv.Value[0]] = new MxValue(kv.Key, width);
 				}
 			}
+		}
+
+		public Int32 GetWidth(Char ch)
+		{
+			if (_metrics.TryGetValue(ch, out MxValue mxVal))
+				return mxVal.Width;
+			return 0;
 		}
 	}
 }

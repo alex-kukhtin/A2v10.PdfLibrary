@@ -13,7 +13,22 @@ namespace A2v10.Pdf
 			var gsState = context.Resources.ExtGState();
 			PdfName res = gsState.Get<PdfName>(resName.Name);
 			var resObj = context.File.GetObject(res);
-			int z = 55;
+		}
+	}
+
+	public class PsPushGraphicState : IPsCommand
+	{
+		public void Execute(PsContext context, IList<PdfObject> args)
+		{
+			context.SaveState();
+		}
+	}
+
+	public class PsPopGraphicState : IPsCommand
+	{
+		public void Execute(PsContext context, IList<PdfObject> args)
+		{
+			context.RestoreState();
 		}
 	}
 }

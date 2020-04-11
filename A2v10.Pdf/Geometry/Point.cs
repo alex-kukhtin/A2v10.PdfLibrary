@@ -41,5 +41,18 @@ namespace A2v10.Pdf
 			return new Point(p1._x * v, p1._y * v);
 		}
 
+		public static Double operator *(Point p1, Point p2)
+		{
+			return p1._x * p2._x + p1._y * p2._y;
+		}
+
+		public Point Cross(Matrix by)
+		{
+
+			Double x = _x * by[0, 0] + _y * by[1, 0] + 1 * by[2, 0];
+			Double y = _x * by[0, 1] + _y * by[1, 1] + 1 * by[2, 1];
+
+			return new Point(x, y);
+		}
 	}
 }

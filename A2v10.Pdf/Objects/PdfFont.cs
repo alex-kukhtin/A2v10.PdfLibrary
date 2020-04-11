@@ -13,6 +13,7 @@ namespace A2v10.Pdf
 		private MapToUnicode _mapToUnicode;
 		private Int32 _defaultWidth;
 		private IDictionary<Int32, Int32> _widths;
+		private Int32 _spaceWidth;
 
 
 		public PdfFont(PdfDictionary dict, PdfFile file)
@@ -20,6 +21,7 @@ namespace A2v10.Pdf
 		{
 			_file = file;
 			_defaultWidth = 1000;
+			_spaceWidth = 0;
 		}
 
 		public void Init()
@@ -82,34 +84,42 @@ namespace A2v10.Pdf
 				_defaultWidth = dwObj.Value;
 			Int32 x1 = 0;
 			Int32 x2 = 0;
+			Int32 width = 0;
 			Dictionary<Int32, Int32> map = new Dictionary<Int32, Int32>();
 			if (widths != null)
 			{
-				for (Int32 w = 0; w < widths.Count; w++)
+				for (Int32 j = 0; j < widths.Count; j++)
 				{
-					x1 = widths.Get<PdfInteger>(w).Value;
-					var e = widths.Get<PdfObject>(++w);
+					x1 = widths.Get<PdfInteger>(j).Value;
+					var e = widths.Get<PdfObject>(++j);
 					switch (e)
 					{
 						case PdfInteger pdfInt:
 							x2 = pdfInt.Value;
-							Int32 width = widths.Get<PdfInteger>(++w).Value;
+							width = widths.Get<PdfInteger>(++j).Value;
 							for (; x1 <= x2; ++x1)
-								map[x1] = w;
+								map[x1] = width;
 							break;
 						case PdfArray pdfArr:
-							for (Int32 j=0; j<pdfArr.Count; j++)
+							for (Int32 k=0; k<pdfArr.Count; k++)
 							{
-								x2 = pdfArr.Get<PdfInteger>(j).Value;
-								map[x1++] = x2;
+								width = pdfArr.Get<PdfInteger>(k).Value;
+								map[x1++] = width;
 							}
 							break;
+						default:
+							throw new InvalidOperationException($"Invalid width value {e.GetType()}");
 					}
 				}
 			}
 			_widths = map;
 		}
 
+
+		Int32 AverageWidth()
+		{
+			return -0;
+		}
 
 		public String DecodeString(Byte[] bytes)
 		{
@@ -119,6 +129,22 @@ namespace A2v10.Pdf
 		void FillMetrics()
 		{
 			_mapToUnicode.FillMetrics(_widths, _defaultWidth);
+
+			_spaceWidth = _mapToUnicode.GetWidth(' ');
+			if (_spaceWidth == 0)
+				_spaceWidth = AverageWidth();
+		}
+
+		public FontMatrix GetFontMatrix()
+		{
+			return FontMatrix.Default();
+		}
+
+		public int GetCharWidth(Char ch)
+		{
+			if (ch == ' ')
+				return _spaceWidth;
+			return _mapToUnicode.GetWidth(ch);
 		}
 	}
 }

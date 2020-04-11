@@ -7,7 +7,7 @@ namespace A2v10.Pdf
 	public class Matrix
 	{
 
-		private readonly Double[,] _m = new Double[3,3];
+		private readonly Double[,] _m = new Double[3, 3];
 
 
 		public Matrix()
@@ -15,7 +15,12 @@ namespace A2v10.Pdf
 			_m[0, 0] = 1;
 			_m[1, 1] = 1;
 			_m[2, 2] = 1;
+		}
 
+		public Double this[Int32 i1, Int32 i2] {
+			get {
+				return _m[i1, i2];
+			}
 		}
 
 		public Matrix(Double[] arg)

@@ -1,4 +1,4 @@
-﻿// Copyright © 2018-2020 Alex Kukhtin. All rights reserved.
+﻿// Copyright © 2020 Alex Kukhtin. All rights reserved.
 
 using System.IO;
 
@@ -16,14 +16,10 @@ namespace A2v10.Pdf
 			_page = page;
 		}
 
-		public void ReadContent()
+		public void WriteTo(Stream stream)
 		{
 			var stm = _dict.Get<PdfStream>("_stream");
-			var ms = new MemoryStream(stm.Bytes);
-			using (var rdr = ContentReader.Create(ms, _file, _page))
-			{
-				rdr.ParseContent();
-			}
+			stream.Write(stm.Bytes, 0, stm.Bytes.Length);
 		}
 	}
 }

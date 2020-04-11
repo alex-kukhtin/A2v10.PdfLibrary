@@ -7,10 +7,13 @@ namespace A2v10.Pdf
 	public class PdfPage : PdfElement
 	{
 		private readonly PdfFile _file;
+		private readonly PageContent _content;
+
 		public PdfPage(PdfDictionary dict, PdfFile file)
 			: base(dict)
 		{
 			_file = file;
+			_content = new PageContent();
 		}
 
 		public IEnumerable<PdfContentBlock> Contents()
@@ -31,11 +34,25 @@ namespace A2v10.Pdf
 			}
 		}
 
+		public PageContent Content => _content;
+
 		public PdfResource Resources()
 		{
 			var resName = _dict.Get<PdfName>("Resources");
 			var pdfElem = _file.GetObject(resName);
 			return new PdfResource(pdfElem, _file);
+		}
+
+		public void Layout()
+		{
+			_content.Layout();
+		}
+
+		public void Write(IPdfWriter writer)
+		{
+			writer.StartPage();
+			_content.WriteTo(writer);
+			writer.EndPage();
 		}
 	}
 }
